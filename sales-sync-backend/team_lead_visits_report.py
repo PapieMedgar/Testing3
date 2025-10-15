@@ -264,7 +264,7 @@ def generate_csv_bytes(start_date=None, end_date=None):
     try:
         import csv
         from daily_visits_report import generate_csv_bytes as generate_daily_visits_csv
-        # Generate daily visits CSV in memory for the requested date range
+        
         csv_bytes = generate_daily_visits_csv(start_date, end_date)
         csv_str = csv_bytes.decode("utf-8")
         reader = csv.DictReader(StringIO(csv_str))
