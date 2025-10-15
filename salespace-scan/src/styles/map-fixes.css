@@ -1,0 +1,44 @@
+/* Fix z-index issues with Leaflet and dialogs */
+
+/* Set lower z-index for all Leaflet elements */
+.leaflet-pane,
+.leaflet-map-pane,
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-tile-container,
+.leaflet-pane > svg,
+.leaflet-pane > canvas,
+.leaflet-zoom-box,
+.leaflet-image-layer,
+.leaflet-layer {
+  z-index: 1 !important;
+}
+
+.leaflet-control {
+  z-index: 2 !important;
+}
+
+.leaflet-popup {
+  z-index: 3 !important;
+}
+
+/* Ensure dialogs are above the map */
+[role="dialog"] {
+  z-index: 50 !important;
+}
+
+/* Ensure dialog backdrop is above the map */
+[data-radix-popper-content-wrapper] {
+  z-index: 50 !important;
+}
+
+/* Ensure dropdown menus are above the map */
+.dropdown-menu {
+  z-index: 50 !important;
+}
+
+/* Ensure toasts are above the map */
+.sonner-toast {
+  z-index: 100 !important;
+}

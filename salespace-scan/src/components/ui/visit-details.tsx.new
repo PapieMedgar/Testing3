@@ -1,0 +1,245 @@
+import { Card } from "./card";
+import { ScrollArea } from "./scroll-area";
+import { Badge } from "./badge";
+import { format } from "date-fns";
+import { Check, Clock, MapPin, User, Building2, Package, Tag, Info, ClipboardList, PersonStanding } from "lucide-react";
+
+interface SurveyResponse {
+  question: string;
+  answer: string | boolean | number | Record<string, unknown>;
+}
+
+interface VisitPhoto {
+  type: string;
+  data: string;
+}
+
+export interface VisitDetails {
+  id: string;
+  shopId: string;
+  shopName: string;
+  agentId: string;
+  agentName?: string;
+  timestamp: string;
+  location: string;
+  visitType?: string;
+  brand?: string;
+  category?: string;
+  product?: string;
+  notes?: string;
+  contactName?: string;
+  contactPhone?: string;
+  surveyResponses: SurveyResponse[];
+  photos: VisitPhoto[];
+}
+
+interface VisitDetailsProps {
+  visit: VisitDetails;
+}
+
+export default function VisitDetails({ visit }: VisitDetailsProps) {
+  return (
+    <Card className="w-full">
+      <ScrollArea className="h-[600px] w-full p-4">
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+            <div>
+              <h2 className="text-2xl font-bold flex items-center gap-2">
+                {visit.visitType === 'individual' ? (
+                  <>
+                    <PersonStanding className="h-6 w-6 text-green-600" />
+                    {visit.shopName}
+                  </>
+                ) : (
+                  <>
+                    <Building2 className="h-6 w-6 text-blue-600" />
+                    {visit.shopName}
+                  </>
+                )}
+              </h2>
+              <div className="flex items-center gap-2 text-muted-foreground mt-1">
+                <MapPin className="h-4 w-4" />
+                <span>{visit.location}</span>
+              </div>
+            </div>
+            <div className="flex flex-col items-end gap-2">
+              <Badge variant="outline" className="flex items-center gap-1">
+                <Clock className="h-4 w-4" />
+                {format(new Date(visit.timestamp), "PPp")}
+              </Badge>
+              {visit.visitType && (
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  <Tag className="h-4 w-4" />
+                  {visit.visitType === 'individual' ? 'Individual Visit' : 'Shop Visit'}
+                </Badge>
+              )}
+            </div>
+          </div>
+
+          {/* Agent & Contact Info */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex items-center gap-2">
+              <User className="h-4 w-4 text-purple-600" />
+              <span className="font-medium">Agent:</span>
+              <span>{visit.agentName || visit.agentId}</span>
+            </div>
+            {visit.contactName && (
+              <div className="flex items-center gap-2">
+                <PersonStanding className="h-4 w-4 text-green-600" />
+                <span className="font-medium">Contact:</span>
+                <span>{visit.contactName}</span>
+                {visit.contactPhone && <span className="ml-2 text-muted-foreground">({visit.contactPhone})</span>}
+              </div>
+            )}
+          </div>
+
+          {/* Brand, Category, Product */}
+          {(visit.brand || visit.category || visit.product) && (
+            <Card className="p-4 bg-blue-50 border-blue-200">
+              <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                <Package className="h-5 w-5 text-blue-600" /> Product Information
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {visit.brand && (
+                  <div className="flex flex-col">
+                    <span className="text-sm text-muted-foreground">Brand</span>
+                    <span className="font-medium">{visit.brand}</span>
+                  </div>
+                )}
+                {visit.category && (
+                  <div className="flex flex-col">
+                    <span className="text-sm text-muted-foreground">Category</span>
+                    <span className="font-medium">{visit.category}</span>
+                  </div>
+                )}
+                {visit.product && (
+                  <div className="flex flex-col">
+                    <span className="text-sm text-muted-foreground">Product</span>
+                    <span className="font-medium">{visit.product}</span>
+                  </div>
+                )}
+              </div>
+            </Card>
+          )}
+
+          {/* Notes */}
+          {visit.notes && (
+            <Card className="p-4 bg-yellow-50 border-yellow-200">
+              <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
+                <Info className="h-5 w-5 text-yellow-600" /> Notes
+              </h3>
+              <div className="text-sm text-gray-700 whitespace-pre-line">{visit.notes}</div>
+            </Card>
+          )}
+
+          {/* Survey Responses */}
+          <div className="space-y-4">
+            {visit.surveyResponses.map((response, index) => (
+              <Card key={index} className="p-4">
+                <h3 className="text-lg font-semibold mb-3 capitalize">
+                  {response.question.replace(/([A-Z])/g, ' $1').toLowerCase()}
+                </h3>
+                {typeof response.answer === "object" && response.answer !== null ? (
+                  <div className="space-y-4">
+                    {Object.entries(response.answer).map(([key, value]) => (
+                      <div key={key}>
+                        <h4 className="text-sm font-medium mb-2 capitalize">
+                          {key.replace(/([A-Z])/g, ' $1').toLowerCase()}
+                        </h4>
+                        {typeof value === "object" && value !== null ? (
+                          <div className="space-y-2 ml-4">
+                            {Object.entries(value).map(([subKey, subValue]) => (
+                              <div key={subKey} className="grid grid-cols-2 gap-4">
+                                <div className="text-sm text-muted-foreground capitalize">
+                                  {subKey.replace(/([A-Z])/g, ' $1').toLowerCase()}:
+                                </div>
+                                <div className="text-sm">
+                                  {typeof subValue === 'object' && subValue !== null ? (
+                                    <div className="ml-4 text-sm">
+                                      <pre className="whitespace-pre-wrap">{JSON.stringify(subValue, null, 2)}</pre>
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center gap-1">
+                                      {typeof subValue === 'boolean' ? (
+                                        subValue ? (
+                                          <Check className="h-4 w-4 text-green-500" />
+                                        ) : (
+                                          <span className="text-red-500">✕</span>
+                                        )
+                                      ) : null}
+                                      {typeof subValue === 'boolean' ? (subValue ? "Yes" : "No") : String(subValue)}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="ml-4 text-sm">
+                            {typeof value === 'boolean' ? (
+                              <div className="flex items-center gap-1">
+                                {value ? (
+                                  <Check className="h-4 w-4 text-green-500" />
+                                ) : (
+                                  <span className="text-red-500">✕</span>
+                                )}
+                                {value ? "Yes" : "No"}
+                              </div>
+                            ) : (
+                              String(value)
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="ml-4 text-sm">
+                    {typeof response.answer === "boolean" ? (
+                      <div className="flex items-center gap-1">
+                        {response.answer ? (
+                          <Check className="h-4 w-4 text-green-500" />
+                        ) : (
+                          <span className="text-red-500">✕</span>
+                        )}
+                        {response.answer ? "Yes" : "No"}
+                      </div>
+                    ) : (
+                      String(response.answer)
+                    )}
+                  </div>
+                )}
+              </Card>
+            ))}
+          </div>
+
+          {/* Photos */}
+          {visit.photos && visit.photos.length > 0 && (
+            <Card className="p-4">
+              <h3 className="text-lg font-semibold mb-3">Photos</h3>
+              <div className="grid grid-cols-2 gap-4">
+                {visit.photos.map((photo: { type: string; data: string }, index) => (
+                  <div key={index} className="space-y-2">
+                    <img
+                      src={photo.data}
+                      alt={`${photo.type.charAt(0).toUpperCase() + photo.type.slice(1)} photo`}
+                      className="w-full h-48 object-cover rounded-lg shadow-sm cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() => {
+                        // Open image in full size in a new tab
+                        window.open(photo.data, '_blank');
+                      }}
+                    />
+                    <p className="text-sm text-muted-foreground text-center">
+                      {photo.type.charAt(0).toUpperCase() + photo.type.slice(1)} Photo
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+        </div>
+      </ScrollArea>
+    </Card>
+  );
+}

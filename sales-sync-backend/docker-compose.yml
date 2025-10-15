@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: salesync-backend
+    environment:
+      - FLASK_ENV=production
+      - DATABASE_URI=mysql+pymysql://dev:Developer1234%23@13.244.241.5:3306/salessync
+      - SECRET_KEY=your_very_secret_key_here
+      - JWT_SECRET_KEY=your_jwt_secret_key_here
+      - UPLOAD_FOLDER=/app/uploads
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./uploads:/app/uploads
+    restart: unless-stopped
+    command: ["python", "run.py"]

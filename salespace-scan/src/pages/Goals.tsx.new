@@ -1,0 +1,346 @@
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Target,
+  Plus,
+  Users,
+  Building,
+  CalendarDays,
+  TrendingUp,
+  Loader2,
+  Edit,
+  Trash2,
+  Award
+} from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { goalAPI, adminAPI, Goal } from "@/lib/api";
+import { toast } from "sonner";
+import { useAuth } from "@/hooks/use-auth";
+import { Progress } from "@/components/ui/progress";
+import { CreateGoalDialog } from "@/components/goals/CreateGoalDialog";
+
+const goalTypes = [
+  { value: "individual_visits", label: "Individual Visits", icon: Target },
+  { value: "daily_visits", label: "Daily Visits", icon: Target },
+  { value: "weekly_visits", label: "Weekly Visits", icon: Target },
+  { value: "monthly_visits", label: "Monthly Visits", icon: Target },
+  { value: "shop_visits", label: "Shop Visits", icon: Building }
+];
+
+const Goals = () => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  // Dialog state
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
+  const [goalToDelete, setGoalToDelete] = useState<Goal | null>(null);
+
+  // Reset dialogs when closing
+  const [editGoalData, setEditGoalData] = useState<Partial<Goal>>({});
+
+  // Fetch users and goals
+  const { data: managers = [], isLoading: isLoadingManagers } = useQuery({
+    queryKey: ['managers'],
+    queryFn: () => adminAPI.getManagers(),
+    enabled: !!user && user.role === 'ADMIN'
+  });
+
+  const { data: agents = [], isLoading: isLoadingAgents } = useQuery({
+    queryKey: ['agents'],
+    queryFn: () => adminAPI.getAgents(),
+    enabled: !!user && user.role === 'ADMIN'
+  });
+  
+  // Fetch goals
+  const { data: goals = [], isLoading } = useQuery({
+    queryKey: ['goals'],
+    queryFn: () => goalAPI.getGoals({ active: true }),
+    enabled: !!user
+  });
+
+  // Goal mutations
+  const createGoalMutation = useMutation({
+    mutationFn: goalAPI.createGoal,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['goals'] });
+      toast.success("Goal created successfully!");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to create goal");
+    }
+  });
+
+  // Update goal mutation
+  const updateGoalMutation = useMutation({
+    mutationFn: ({ id, updates }: { id: number; updates: Partial<Goal> }) => 
+      goalAPI.updateGoal(id, updates),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['goals'] });
+      setIsEditDialogOpen(false);
+      setEditingGoal(null);
+      toast.success("Goal updated successfully!");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to update goal");
+    }
+  });
+
+  // Delete goal mutation
+  const deleteGoalMutation = useMutation({
+    mutationFn: goalAPI.deleteGoal,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['goals'] });
+      setIsDeleteDialogOpen(false);
+      setGoalToDelete(null);
+      toast.success("Goal deleted successfully!");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to delete goal");
+    }
+  });
+
+  // Goal operations
+  const handleGoalCreated = () => {
+    queryClient.invalidateQueries({ queryKey: ['goals'] });
+    toast.success("Goal created successfully!");
+  };
+
+  const openEditDialog = (goal: Goal) => {
+    setEditingGoal(goal);
+    setEditGoalData(goal);
+    setIsEditDialogOpen(true);
+  };
+
+  const openDeleteDialog = (goal: Goal) => {
+    setGoalToDelete(goal);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteGoal = () => {
+    if (!goalToDelete) return;
+    deleteGoalMutation.mutate(goalToDelete.id);
+  };
+
+  // Helper functions
+  const getGoalStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed': return 'bg-green-100 text-green-800';
+      case 'in_progress': return 'bg-blue-100 text-blue-800';
+      case 'overdue': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getGoalProgress = (current: number, target: number) => {
+    return Math.min(100, Math.round((current / target) * 100));
+  };
+
+  // Group goals by type
+  const goalsByType = goals.reduce((acc: Record<string, Goal[]>, goal: Goal) => {
+    if (!acc[goal.goal_type]) {
+      acc[goal.goal_type] = [];
+    }
+    acc[goal.goal_type].push(goal);
+    return acc;
+  }, {});
+
+  if (isLoading || isLoadingManagers || isLoadingAgents) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p>Loading goals...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Goals</h1>
+          <p className="text-muted-foreground">
+            Track and manage organizational goals
+          </p>
+        </div>
+        {user?.role === 'ADMIN' && (
+          <Button onClick={() => setIsCreateDialogOpen(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Create Goal
+          </Button>
+        )}
+      </div>
+
+      {goals.length === 0 ? (
+        <div className="text-center py-8">
+          <Target className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-medium mb-2">No goals yet</h3>
+          <p className="text-muted-foreground mb-4">
+            {user?.role === 'ADMIN' 
+              ? "Get started by creating your first goal"
+              : "No goals have been set yet"}
+          </p>
+          {user?.role === 'ADMIN' && (
+            <Button onClick={() => setIsCreateDialogOpen(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Create Goal
+            </Button>
+          )}
+        </div>
+      ) : (
+        <div className="grid gap-6">
+          {Object.entries(goalsByType).map(([type, typeGoals]) => {
+            const goalType = goalTypes.find(gt => gt.value === type);
+            if (!goalType) return null;
+            
+            return (
+              <Card key={type}>
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <goalType.icon className="w-5 h-5" />
+                    <CardTitle>{goalType.label} Goals</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Title</TableHead>
+                        <TableHead>Progress</TableHead>
+                        <TableHead>Target</TableHead>
+                        <TableHead>Timeline</TableHead>
+                        <TableHead>Assignee</TableHead>
+                        {user?.role === 'ADMIN' && <TableHead className="w-[100px]">Actions</TableHead>}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {typeGoals.map((goal) => (
+                        <TableRow key={goal.id}>
+                          <TableCell>
+                            <div>
+                              <div className="font-medium">{goal.title}</div>
+                              {goal.description && (
+                                <div className="text-sm text-muted-foreground">
+                                  {goal.description}
+                                </div>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between text-sm">
+                                <span>{goal.current} / {goal.target}</span>
+                                <span className="font-medium">
+                                  {getGoalProgress(goal.current, goal.target)}%
+                                </span>
+                              </div>
+                              <Progress value={getGoalProgress(goal.current, goal.target)} />
+                            </div>
+                          </TableCell>
+                          <TableCell>{goal.target}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                              <CalendarDays className="w-4 h-4" />
+                              <span>
+                                Due: {new Date(goal.deadline).toLocaleDateString()}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm">
+                              {goal.assignee?.name || goal.assignee?.phone || 'Unassigned'}
+                            </div>
+                          </TableCell>
+                          {user?.role === 'ADMIN' && (
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon"
+                                  onClick={() => openEditDialog(goal)}
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon"
+                                  onClick={() => openDeleteDialog(goal)}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          )}
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Create Goal Dialog */}
+      <CreateGoalDialog 
+        isOpen={isCreateDialogOpen}
+        onClose={() => setIsCreateDialogOpen(false)}
+        managers={managers}
+        agents={agents}
+        onGoalCreated={handleGoalCreated}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Goal</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this goal? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleDeleteGoal} 
+              disabled={deleteGoalMutation.isPending}
+            >
+              {deleteGoalMutation.isPending && (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              )}
+              Delete Goal
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+export default Goals;
