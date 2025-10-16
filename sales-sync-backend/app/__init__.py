@@ -84,6 +84,7 @@ def create_app():
     from .routes.brand import brand_bp
     from .routes.brands import brands_bp
     from .routes.test import test_bp
+    from .routes.reports_api import reports_bp
 
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(admin_bp, url_prefix='/api/admin')
@@ -93,6 +94,7 @@ def create_app():
     app.register_blueprint(brand_bp, url_prefix='/api')
     app.register_blueprint(brands_bp, url_prefix='/api/brands')
     app.register_blueprint(test_bp, url_prefix='/api/test')
+    app.register_blueprint(reports_bp, url_prefix='/api/reports')
     # Register setup blueprint with no extra prefix (it already has /setup)
     app.register_blueprint(setup_bp)
 

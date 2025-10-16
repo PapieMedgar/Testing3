@@ -1,5 +1,4 @@
-from flask import Flask, jsonify, send_file, request
-from flask_cors import CORS
+from flask import Blueprint, jsonify, send_file, request
 import os
 import glob
 from datetime import datetime
@@ -14,8 +13,7 @@ from daily_visits_report import generate_xlsx_bytes as generate_daily_visits_xls
 from team_lead_visit_details_export import generate_xlsx_bytes as generate_team_lead_details_xlsx
 from team_lead_visits_report import generate_xlsx_bytes as generate_team_lead_visits_xlsx
 
-app = Flask(__name__)
-CORS(app)
+reports_bp = Blueprint('reports', __name__)
 
 # Base directory for reports (local to sales-sync-backend)
 REPORTS_BASE = os.path.abspath(os.path.join(os.path.dirname(__file__), 'reports'))
@@ -40,7 +38,7 @@ def get_all_files(report_type):
     files = sorted(files, key=os.path.getmtime, reverse=True)
     return files
 
-@app.route('/api/reports/latest', methods=['GET'])
+@reports_bp.route('/api/reports/latest', methods=['GET'])
 def list_latest_reports():
     result = {}
     for key in REPORT_TYPES:
@@ -54,7 +52,7 @@ def list_latest_reports():
             result[key] = None
     return jsonify(result)
 
-@app.route('/api/reports/all', methods=['GET'])
+@reports_bp.route('/api/reports/all', methods=['GET'])
 def list_all_reports():
     result = {}
     for key in REPORT_TYPES:
@@ -83,7 +81,7 @@ def list_all_reports():
                 end_date = max(visit_dates).strftime('%Y-%m-%d')
             else:
                 start_date = end_date = None
-        # If no xlsx files, provide a direct download link to the streaming endpoint
+  
         if not xlsx_files:
             if key == 'visit_details':
                 download_url = '/api/reports/daily_visits_xlsx'
@@ -120,7 +118,7 @@ def list_all_reports():
             result[key]['end_date'] = end_date
     return jsonify(result)
 
-@app.route('/api/reports/download/<report_type>', methods=['GET'])
+@reports_bp.route('/api/reports/download/<report_type>', methods=['GET'])
 def download_report(report_type):
     if report_type not in REPORT_TYPES:
         return jsonify({'error': 'Invalid report type'}), 400
@@ -137,7 +135,7 @@ def download_report(report_type):
         return jsonify({'error': 'No report found'}), 404
     return send_file(latest, as_attachment=True)
 
-@app.route('/api/reports/daily_visits_xlsx', methods=['GET'])
+@reports_bp.route('/api/reports/daily_visits_xlsx', methods=['GET'])
 def get_daily_visits_xlsx():
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
@@ -155,7 +153,7 @@ def get_daily_visits_xlsx():
         traceback.print_exc()
         return jsonify({'error': 'Failed to generate report', 'details': str(e)}), 500
 
-@app.route('/api/reports/team_lead_visit_details_xlsx', methods=['GET'])
+@reports_bp.route('/api/reports/team_lead_visit_details_xlsx', methods=['GET'])
 def get_team_lead_visit_details_xlsx():
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
@@ -167,7 +165,7 @@ def get_team_lead_visit_details_xlsx():
         download_name='team_lead_visit_details.xlsx'
     )
 
-@app.route('/api/reports/team_lead_visits_xlsx', methods=['GET'])
+@reports_bp.route('/api/reports/team_lead_visits_xlsx', methods=['GET'])
 def get_team_lead_visits_xlsx():
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
@@ -179,17 +177,17 @@ def get_team_lead_visits_xlsx():
         download_name='team_lead_visits.xlsx'
     )
 
-@app.route('/api/reports/team_lead_visit_details_xlsx/<lead_slug>', methods=['GET'])
+@reports_bp.route('/api/reports/team_lead_visit_details_xlsx/<lead_slug>', methods=['GET'])
 def get_team_lead_visit_details_lead_xlsx(lead_slug):
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
-    # Generate all team lead files in memory
+    
     from team_lead_visit_details_export import LEAD_ORDER, normalize_name_for_match, generate_xlsx_bytes, export_visit_details
-    # Use export_visit_details to generate files for all leads
+
     import tempfile
     with tempfile.TemporaryDirectory() as tmpdir:
         export_visit_details(start_date, end_date, tmpdir)
-        # Find the file for the requested lead
+        
         for lead in LEAD_ORDER:
             slug = normalize_name_for_match(lead).replace(' ', '-')
             if slug == lead_slug:
@@ -204,7 +202,7 @@ def get_team_lead_visit_details_lead_xlsx(lead_slug):
         return jsonify({'error': 'Team lead file not found'}), 404
 
 # --- CSV download endpoints ---
-@app.route('/api/reports/daily_visits_csv', methods=['GET'])
+@reports_bp.route('/api/reports/daily_visits_csv', methods=['GET'])
 def get_daily_visits_csv():
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
@@ -217,7 +215,7 @@ def get_daily_visits_csv():
         download_name='daily_visits.csv'
     )
 
-@app.route('/api/reports/team_lead_visit_details_csv', methods=['GET'])
+@reports_bp.route('/api/reports/team_lead_visit_details_csv', methods=['GET'])
 def get_team_lead_visit_details_csv():
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
@@ -230,7 +228,7 @@ def get_team_lead_visit_details_csv():
         download_name='team_lead_visit_details.csv'
     )
 
-@app.route('/api/reports/team_lead_visits_csv', methods=['GET'])
+@reports_bp.route('/api/reports/team_lead_visits_csv', methods=['GET'])
 def get_team_lead_visits_csv():
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
@@ -242,6 +240,3 @@ def get_team_lead_visits_csv():
         as_attachment=True,
         download_name='team_lead_visits.csv'
     )
-
-if __name__ == '__main__':
-    app.run(port=5050, debug=True)

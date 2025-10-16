@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { reportsAPI } from "@/lib/api";
 
 const TEAM_LEADS = [
   "Moses Thulare Moshwane",
@@ -20,7 +20,27 @@ const Reports: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // No need to fetch a list of files, just show download buttons that always hit the API endpoints
+  const handleDownload = async (
+    downloadFn: () => Promise<Response>,
+    filename: string
+  ) => {
+    try {
+      setLoading(true);
+      const response = await downloadFn();
+      const blob = await response.blob();
+      const link = document.createElement("a");
+      link.href = window.URL.createObjectURL(blob);
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setLoading(false);
+    } catch (err) {
+      setLoading(false);
+      setError("Failed to download report");
+    }
+  };
+
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">Reports</h1>
@@ -28,30 +48,12 @@ const Reports: React.FC = () => {
         <div>
           <h2 className="text-lg font-semibold mb-2">Visit Details</h2>
           <Button
-            onClick={async () => {
-              try {
-                setLoading(true);
-                const response = await axios.get(
-                  "http://localhost:5050/api/reports/daily_visits_xlsx",
-                  { responseType: "blob" }
-                );
-                const blob = new Blob([response.data], {
-                  type:
-                    response.headers["content-type"] ||
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                });
-                const link = document.createElement("a");
-                link.href = window.URL.createObjectURL(blob);
-                link.download = "daily_visits.xlsx";
-                document.body.appendChild(link);
-                link.click();
-                link.remove();
-                setLoading(false);
-              } catch (err) {
-                setLoading(false);
-                alert("Failed to download report");
-              }
-            }}
+            onClick={() =>
+              handleDownload(
+                reportsAPI.downloadDailyVisitsXLSX,
+                "daily_visits.xlsx"
+              )
+            }
           >
             Download Visit Details (XLSX)
           </Button>
@@ -59,30 +61,12 @@ const Reports: React.FC = () => {
         <div>
           <h2 className="text-lg font-semibold mb-2">Team Lead Visit Report</h2>
           <Button
-            onClick={async () => {
-              try {
-                setLoading(true);
-                const response = await axios.get(
-                  "http://localhost:5050/api/reports/team_lead_visits_xlsx",
-                  { responseType: "blob" }
-                );
-                const blob = new Blob([response.data], {
-                  type:
-                    response.headers["content-type"] ||
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                });
-                const link = document.createElement("a");
-                link.href = window.URL.createObjectURL(blob);
-                link.download = "team_lead_visits.xlsx";
-                document.body.appendChild(link);
-                link.click();
-                link.remove();
-                setLoading(false);
-              } catch (err) {
-                setLoading(false);
-                alert("Failed to download report");
-              }
-            }}
+            onClick={() =>
+              handleDownload(
+                reportsAPI.downloadTeamLeadVisitsXLSX,
+                "team_lead_visits.xlsx"
+              )
+            }
           >
             Download Team Lead Visit Report (XLSX)
           </Button>
@@ -95,7 +79,6 @@ const Reports: React.FC = () => {
             {TEAM_LEADS.map((lead) => {
               const slug = leadSlug(lead);
               const filename = `visit_details_${slug}.xlsx`;
-              const url = `http://localhost:5050/api/reports/team_lead_visit_details_xlsx/${slug}`;
               return (
                 <li
                   key={slug}
@@ -103,29 +86,12 @@ const Reports: React.FC = () => {
                 >
                   <span>{filename}</span>
                   <Button
-                    onClick={async () => {
-                      try {
-                        setLoading(true);
-                        const response = await axios.get(url, {
-                          responseType: "blob",
-                        });
-                        const blob = new Blob([response.data], {
-                          type:
-                            response.headers["content-type"] ||
-                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                        });
-                        const link = document.createElement("a");
-                        link.href = window.URL.createObjectURL(blob);
-                        link.download = filename;
-                        document.body.appendChild(link);
-                        link.click();
-                        link.remove();
-                        setLoading(false);
-                      } catch (err) {
-                        setLoading(false);
-                        alert("Failed to download report");
-                      }
-                    }}
+                    onClick={() =>
+                      handleDownload(
+                        () => reportsAPI.downloadTeamLeadVisitDetailsXLSX(slug),
+                        filename
+                      )
+                    }
                   >
                     Download
                   </Button>

@@ -1073,3 +1073,30 @@ export const shopsAPI = {
     return response.json().then(data => data.shop);
   },
 };
+
+// Reports API
+import { API_BASE_URL } from './api';
+
+export const reportsAPI = {
+  downloadDailyVisitsXLSX: async () => {
+    const response = await fetch(`${API_BASE_URL}/reports/daily_visits_xlsx`, {
+      credentials: 'include',
+    });
+    if (!response.ok) throw new Error('Failed to download report');
+    return response;
+  },
+  downloadTeamLeadVisitsXLSX: async () => {
+    const response = await fetch(`${API_BASE_URL}/reports/team_lead_visits_xlsx`, {
+      credentials: 'include',
+    });
+    if (!response.ok) throw new Error('Failed to download report');
+    return response;
+  },
+  downloadTeamLeadVisitDetailsXLSX: async (leadSlug: string) => {
+    const response = await fetch(`${API_BASE_URL}/reports/team_lead_visit_details_xlsx/${leadSlug}`, {
+      credentials: 'include',
+    });
+    if (!response.ok) throw new Error('Failed to download report');
+    return response;
+  },
+};
