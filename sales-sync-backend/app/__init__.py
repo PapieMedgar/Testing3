@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 from flask.json.provider import DefaultJSONProvider
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
@@ -46,15 +46,14 @@ def create_app():
     # Allow up to 20MB per request (adjust as needed)
     app.config['MAX_CONTENT_LENGTH'] = 20 * 1024 * 1024
     
-    # Enable CORS for all routes with proper preflight handling
-    CORS(app, resources={r"/*": {
-        "origins": "*",
-        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        "allow_headers": ["Content-Type", "Authorization", "Accept", "Origin", "X-Requested-With"],
-        "expose_headers": ["Content-Type", "Authorization"],
-        "supports_credentials": True,
-        "send_wildcard": False
-    }})
+    # Enable CORS for specific local development origins and allow credentials
+    allowed_origins = [
+        "http://localhost:8080",
+        "http://127.0.0.1:8080",
+        "http://localhost:5000",
+        "http://127.0.0.1:5000",
+    ]
+    CORS(app, resources={r"/*": {"origins": allowed_origins}}, supports_credentials=True)
     
     # Initialize extensions
     db.init_app(app)
@@ -62,13 +61,17 @@ def create_app():
     bcrypt.init_app(app)
     jwt.init_app(app)
     
-    # Add OPTIONS method handler for all routes
+    # Add after_request handler to echo allowed Origin and set CORS headers correctly
     @app.after_request
     def after_request(response):
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,Accept,Origin,X-Requested-With')
-        response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
-        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        origin = request.headers.get('Origin')
+        if origin and origin in allowed_origins:
+            response.headers['Access-Control-Allow-Origin'] = origin
+            response.headers['Vary'] = 'Origin'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization,Accept,Origin,X-Requested-With'
+        response.headers['Access-Control-Allow-Methods'] = 'GET,PUT,POST,DELETE,OPTIONS'
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Expose-Headers'] = 'Content-Disposition,Content-Type,Authorization'
         return response
     
     # Import models to ensure they are registered
@@ -95,7 +98,6 @@ def create_app():
     app.register_blueprint(brands_bp, url_prefix='/api/brands')
     app.register_blueprint(test_bp, url_prefix='/api/test')
     app.register_blueprint(reports_bp, url_prefix='/api/reports')
-    # Register setup blueprint with no extra prefix (it already has /setup)
     app.register_blueprint(setup_bp)
 
     return app

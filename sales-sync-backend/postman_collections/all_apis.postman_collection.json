@@ -1,0 +1,120 @@
+{
+  "info": {
+    "name": "Sales Sync Backend - All APIs",
+    "_postman_id": "all-apis-collection-001",
+    "description": "Postman collection for main backend API groups. Set environment variables `baseUrl` and `token` before running requests.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+27123456789\",\n  \"password\": \"agent123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api","auth","login"] }
+          }
+        },
+        {
+          "name": "Get current user (me)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/auth/me", "host": ["{{baseUrl}}"], "path": ["api","auth","me"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Agent",
+      "item": [
+        {
+          "name": "List shops",
+          "request": { "method": "GET", "header": [{ "key":"Authorization","value":"Bearer {{token}}" }], "url": { "raw": "{{baseUrl}}/api/agent/shops", "host":["{{baseUrl}}"], "path":["api","agent","shops"] } }
+        },
+        {
+          "name": "Create shop",
+          "request": { "method": "POST", "header": [ {"key":"Authorization","value":"Bearer {{token}}"}, {"key":"Content-Type","value":"application/json"} ], "body": { "mode":"raw", "raw": "{\n  \"name\": \"New Shop\",\n  \"address\": \"123 Main St\",\n  \"latitude\": -25.0,\n  \"longitude\": 28.0\n}" }, "url": { "raw":"{{baseUrl}}/api/agent/shops", "host":["{{baseUrl}}"], "path":["api","agent","shops"] } }
+        }
+      ]
+    },
+    {
+      "name": "Manager",
+      "item": [
+        {
+          "name": "Manager - list or sample",
+          "request": { "method": "GET", "header": [{ "key":"Authorization","value":"Bearer {{token}}" }], "url": { "raw":"{{baseUrl}}/api/manager", "host":["{{baseUrl}}"], "path":["api","manager"] } }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "List users",
+          "request": { "method": "GET", "header": [{ "key":"Authorization","value":"Bearer {{token}}" }], "url": { "raw":"{{baseUrl}}/api/admin/users", "host":["{{baseUrl}}"], "path":["api","admin","users"] } }
+        }
+      ]
+    },
+    {
+      "name": "Goals",
+      "item": [
+        {
+          "name": "Get goals",
+          "request": { "method": "GET", "header": [{ "key":"Authorization","value":"Bearer {{token}}" }], "url": { "raw":"{{baseUrl}}/api/goals", "host":["{{baseUrl}}"], "path":["api","goals"] } }
+        },
+        {
+          "name": "Create goal",
+          "request": { "method": "POST", "header": [{ "key":"Authorization","value":"Bearer {{token}}"}, {"key":"Content-Type","value":"application/json"}], "body": { "mode":"raw", "raw":"{\n  \"title\": \"Sample Goal\",\n  \"goal_type\": \"daily_visits\",\n  \"target_value\": 10,\n  \"start_date\": \"2025-10-01\",\n  \"end_date\": \"2025-10-31\",\n  \"assignee_id\": 2\n}" }, "url": { "raw":"{{baseUrl}}/api/goals", "host":["{{baseUrl}}"], "path":["api","goals"] } }
+        }
+      ]
+    },
+    {
+      "name": "Brands",
+      "item": [
+        { "name": "List brands", "request": { "method":"GET", "header":[{"key":"Authorization","value":"Bearer {{token}}"}], "url": { "raw":"{{baseUrl}}/api/brands", "host":["{{baseUrl}}"], "path":["api","brands"] } } },
+        { "name": "Create brand", "request": { "method":"POST", "header":[{"key":"Authorization","value":"Bearer {{token}}"},{"key":"Content-Type","value":"application/json"}], "body": { "mode":"raw", "raw":"{\"name\": \"Brand X\"}" }, "url": { "raw":"{{baseUrl}}/api/brands", "host":["{{baseUrl}}"], "path":["api","brands"] } } }
+      ]
+    },
+    {
+      "name": "Brand",
+      "item": [
+        { "name": "Get brand by id", "request": { "method":"GET", "header":[{"key":"Authorization","value":"Bearer {{token}}"}], "url": { "raw":"{{baseUrl}}/api/brands/:id", "host":["{{baseUrl}}"], "path":["api","brands",":id"], "variable":[{"key":"id","value":"1"}] } } }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        { "name": "List latest reports", "request": { "method":"GET", "header":[{"key":"Authorization","value":"Bearer {{token}}"}], "url": { "raw":"{{baseUrl}}/api/reports/latest", "host":["{{baseUrl}}"], "path":["api","reports","latest"] } } },
+        { "name": "Generate daily xlsx", "request": { "method":"GET", "header":[{"key":"Authorization","value":"Bearer {{token}}"}], "url": { "raw":"{{baseUrl}}/api/reports/daily_visits_xlsx", "host":["{{baseUrl}}"], "path":["api","reports","daily_visits_xlsx"] } } },
+        { "name": "Download by file", "request": { "method":"GET", "header":[{"key":"Authorization","value":"Bearer {{token}}"}], "url": { "raw":"{{baseUrl}}/api/reports/download/:type?file={{filename}}", "host":["{{baseUrl}}"], "path":["api","reports","download",":type"], "query":[{"key":"file","value":"{{filename}}"}], "variable":[{"key":"type","value":"visit_details"},{"key":"filename","value":"daily_visits.xlsx"}] } } }
+      ]
+    },
+    {
+      "name": "Test",
+      "item": [
+        { "name": "Ping test route", "request": { "method":"GET", "url": { "raw":"{{baseUrl}}/api/test/ping", "host":["{{baseUrl}}"], "path":["api","test","ping"] } } }
+      ]
+    },
+    {
+      "name": "Setup",
+      "item": [
+        { "name": "Run setup (init)", "request": { "method":"POST", "header":[{"key":"Content-Type","value":"application/json"}], "body": { "mode":"raw", "raw":"{}" }, "url": { "raw":"{{baseUrl}}/api/setup/init", "host":["{{baseUrl}}"], "path":["api","setup","init"] } } }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000" },
+    { "key": "token", "value": "" }
+  ]
+}

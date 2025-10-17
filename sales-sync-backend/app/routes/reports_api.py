@@ -3,12 +3,11 @@ import os
 import glob
 from datetime import datetime
 from io import BytesIO
-import sys
 
-# Ensure parent directory (sales-sync-backend) is in sys.path
+# Ensure parent directory (sales-sync-backend) is in sys.path for imports of generators
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
-if parent_dir not in sys.path:
-    sys.path.insert(0, parent_dir)
+if parent_dir not in __import__('sys').path:
+    __import__('sys').path.insert(0, parent_dir)
 from daily_visits_report import generate_xlsx_bytes as generate_daily_visits_xlsx
 from team_lead_visit_details_export import generate_xlsx_bytes as generate_team_lead_details_xlsx
 from team_lead_visits_report import generate_xlsx_bytes as generate_team_lead_visits_xlsx
@@ -38,7 +37,7 @@ def get_all_files(report_type):
     files = sorted(files, key=os.path.getmtime, reverse=True)
     return files
 
-@reports_bp.route('/api/reports/latest', methods=['GET'])
+@reports_bp.route('/latest', methods=['GET'])
 def list_latest_reports():
     result = {}
     for key in REPORT_TYPES:
@@ -52,7 +51,7 @@ def list_latest_reports():
             result[key] = None
     return jsonify(result)
 
-@reports_bp.route('/api/reports/all', methods=['GET'])
+@reports_bp.route('/all', methods=['GET'])
 def list_all_reports():
     result = {}
     for key in REPORT_TYPES:
@@ -118,7 +117,7 @@ def list_all_reports():
             result[key]['end_date'] = end_date
     return jsonify(result)
 
-@reports_bp.route('/api/reports/download/<report_type>', methods=['GET'])
+@reports_bp.route('/download/<report_type>', methods=['GET'])
 def download_report(report_type):
     if report_type not in REPORT_TYPES:
         return jsonify({'error': 'Invalid report type'}), 400
@@ -135,7 +134,7 @@ def download_report(report_type):
         return jsonify({'error': 'No report found'}), 404
     return send_file(latest, as_attachment=True)
 
-@reports_bp.route('/api/reports/daily_visits_xlsx', methods=['GET'])
+@reports_bp.route('/daily_visits_xlsx', methods=['GET'])
 def get_daily_visits_xlsx():
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
@@ -153,7 +152,7 @@ def get_daily_visits_xlsx():
         traceback.print_exc()
         return jsonify({'error': 'Failed to generate report', 'details': str(e)}), 500
 
-@reports_bp.route('/api/reports/team_lead_visit_details_xlsx', methods=['GET'])
+@reports_bp.route('/team_lead_visit_details_xlsx', methods=['GET'])
 def get_team_lead_visit_details_xlsx():
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
@@ -165,7 +164,7 @@ def get_team_lead_visit_details_xlsx():
         download_name='team_lead_visit_details.xlsx'
     )
 
-@reports_bp.route('/api/reports/team_lead_visits_xlsx', methods=['GET'])
+@reports_bp.route('/team_lead_visits_xlsx', methods=['GET'])
 def get_team_lead_visits_xlsx():
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
@@ -177,7 +176,7 @@ def get_team_lead_visits_xlsx():
         download_name='team_lead_visits.xlsx'
     )
 
-@reports_bp.route('/api/reports/team_lead_visit_details_xlsx/<lead_slug>', methods=['GET'])
+@reports_bp.route('/team_lead_visit_details_xlsx/<lead_slug>', methods=['GET'])
 def get_team_lead_visit_details_lead_xlsx(lead_slug):
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
@@ -202,7 +201,7 @@ def get_team_lead_visit_details_lead_xlsx(lead_slug):
         return jsonify({'error': 'Team lead file not found'}), 404
 
 # --- CSV download endpoints ---
-@reports_bp.route('/api/reports/daily_visits_csv', methods=['GET'])
+@reports_bp.route('/daily_visits_csv', methods=['GET'])
 def get_daily_visits_csv():
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
@@ -215,7 +214,7 @@ def get_daily_visits_csv():
         download_name='daily_visits.csv'
     )
 
-@reports_bp.route('/api/reports/team_lead_visit_details_csv', methods=['GET'])
+@reports_bp.route('/team_lead_visit_details_csv', methods=['GET'])
 def get_team_lead_visit_details_csv():
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
@@ -228,7 +227,7 @@ def get_team_lead_visit_details_csv():
         download_name='team_lead_visit_details.csv'
     )
 
-@reports_bp.route('/api/reports/team_lead_visits_csv', methods=['GET'])
+@reports_bp.route('/team_lead_visits_csv', methods=['GET'])
 def get_team_lead_visits_csv():
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')

@@ -1,0 +1,120 @@
+{
+  "info": {
+    "name": "Sales Sync Backend - Reports",
+    "_postman_id": "a1b2c3d4-reports-collection",
+    "description": "Collection for reports endpoints in the sales-sync-backend. Import into Postman and set the environment variable `baseUrl` and `token` as needed.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "List latest reports",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+        ],
+        "url": { "raw": "{{baseUrl}}/api/reports/latest", "host": ["{{baseUrl}}"], "path": ["api","reports","latest"] }
+      }
+    },
+    {
+      "name": "List all reports",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+        ],
+        "url": { "raw": "{{baseUrl}}/api/reports/all", "host": ["{{baseUrl}}"], "path": ["api","reports","all"] }
+      }
+    },
+    {
+      "name": "Download (by type, optional file query)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/reports/download/:report_type?file={{filename}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api","reports","download",":report_type"],
+          "query": [
+            { "key": "file", "value": "{{filename}}" }
+          ],
+          "variable": [
+            { "key": "report_type", "value": "visit_details" },
+            { "key": "filename", "value": "daily_visits.xlsx" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Generate / Download daily_visits_xlsx",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+        ],
+        "url": { "raw": "{{baseUrl}}/api/reports/daily_visits_xlsx", "host": ["{{baseUrl}}"], "path": ["api","reports","daily_visits_xlsx"] }
+      }
+    },
+    {
+      "name": "Generate / Download team_lead_visits_xlsx",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+        ],
+        "url": { "raw": "{{baseUrl}}/api/reports/team_lead_visits_xlsx", "host": ["{{baseUrl}}"], "path": ["api","reports","team_lead_visits_xlsx"] }
+      }
+    },
+    {
+      "name": "Generate / Download team_lead_visit_details_xlsx",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+        ],
+        "url": { "raw": "{{baseUrl}}/api/reports/team_lead_visit_details_xlsx", "host": ["{{baseUrl}}"], "path": ["api","reports","team_lead_visit_details_xlsx"] }
+      }
+    },
+    {
+      "name": "Generate / Download per-lead visit details",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/reports/team_lead_visit_details_xlsx/:lead_slug",
+          "host": ["{{baseUrl}}"],
+          "path": ["api","reports","team_lead_visit_details_xlsx",":lead_slug"],
+          "variable": [ { "key": "lead_slug", "value": "michael-chen" } ]
+        }
+      }
+    },
+    {
+      "name": "CSV - daily_visits_csv",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+        ],
+        "url": { "raw": "{{baseUrl}}/api/reports/daily_visits_csv", "host": ["{{baseUrl}}"], "path": ["api","reports","daily_visits_csv"] }
+      }
+    },
+    {
+      "name": "CSV - team_lead_visit_details_csv",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+        ],
+        "url": { "raw": "{{baseUrl}}/api/reports/team_lead_visit_details_csv", "host": ["{{baseUrl}}"], "path": ["api","reports","team_lead_visit_details_csv"] }
+      }
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000" },
+    { "key": "token", "value": "" }
+  ]
+}
