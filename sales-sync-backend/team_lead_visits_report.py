@@ -15,6 +15,7 @@ TEAM_LEAD_TO_USERS: Dict[str, List[str]] = {
         "Maithobo Motshabi",
         "Lebo Ramano",
         "Refilwe Prudence Mgidi",
+        "Moses Thulare Moshwane",
     ],
     "Nkosingiphile Ntombikayise Ntombi Khumalo": [
         "Phamela Z Mayisela",
@@ -22,6 +23,7 @@ TEAM_LEAD_TO_USERS: Dict[str, List[str]] = {
         "Goodness Luyanda Sthandiwe Ndwandwe",
         "Nolwazi Natasha Adams",
         "Nolwazi Mthethwa",
+        "Nkosingiphile Ntombikayise Ntombi Khumalo",
     ],
     "Ntombizodwa Zodwa Dubazana": [
         "Saziso Veli Nhlozi",
@@ -29,12 +31,14 @@ TEAM_LEAD_TO_USERS: Dict[str, List[str]] = {
         "Perseverance G Merafe",
         "Lebogang Karabo Radebe",
         "Onalenna Maisa",
+        "Ntombizodwa Zodwa Dubazana",
     ],
     "Gilda Katarina Mashele": [
         "Karyn Moloi",
         "Mothipane Mary Mpuru (Keneiloe)",
         "Dineo Sophie Semase",
         "Mojo Godi",
+        "Gilda Katarina Mashele",
     ],
 }
 

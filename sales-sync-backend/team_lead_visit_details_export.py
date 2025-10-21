@@ -267,11 +267,15 @@ def extract_fields_from_flat(flat: Dict[str, str]) -> Tuple[str, str]:
 
 def write_csv(rows: List[Dict[str, str]], output_path: str) -> None:
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    # include shop columns
+    fieldnames = ["Team Lead", "Date", "Goldrush ID", "Cust Name", "Shop name", "Latitude", "Longitude"]
     with open(output_path, mode="w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=["Team Lead", "Date", "Goldrush ID", "Cust Name"])
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         for r in rows:
-            writer.writerow(r)
+            # ensure all expected keys exist
+            out = {k: (r.get(k) or "") for k in fieldnames}
+            writer.writerow(out)
 
 
 def write_xlsx(rows: List[Dict[str, str]], output_csv_path: str) -> str:
@@ -279,7 +283,7 @@ def write_xlsx(rows: List[Dict[str, str]], output_csv_path: str) -> str:
     ws = wb.active
     ws.title = "Visit Details"
 
-    headers = ["Team Lead", "Date", "Goldrush ID", "Cust Name"]
+    headers = ["Team Lead", "Date", "Goldrush ID", "Cust Name", "Shop name", "Latitude", "Longitude"]
     ws.append(headers)
     for cell in ws[1]:
         cell.font = Font(bold=True)
@@ -315,6 +319,32 @@ def export_visit_details(start_date: Optional[date], end_date: Optional[date], o
             vr_checkin_id_col = infer_visit_response_checkin_id_col(connection, visit_response_table, checkins_table) or "checkin_id"
         responses_col = choose_responses_column(connection, visit_response_table)
 
+        # Try to find shops table and shop FK on checkins
+        shops_table = resolve_table_name(connection, [os.getenv("SALESYNC_TABLE_SHOPS"), "shops", "shop", "stores"]) or None
+        checkins_cols = [c for c, _ in get_columns_for_table(connection, checkins_table)]
+        shop_fk = None
+        for c in checkins_cols:
+            low = c.lower()
+            if ("shop" in low or "store" in low or "location" in low or "outlet" in low) and low.endswith("_id"):
+                shop_fk = c
+                break
+        if not shop_fk:
+            for candidate in ("shop_id", "store_id", "location_id"):
+                if candidate in checkins_cols:
+                    shop_fk = candidate
+                    break
+
+        shop_id_col = shop_name_col = shop_lat_col = shop_lng_col = None
+        goldrush_col = None
+        if shops_table and shop_fk:
+            shop_cols = get_columns_for_table(connection, shops_table)
+            shop_names = [c for c, _ in shop_cols]
+            shop_id_col = next((c for c in shop_names if c.lower().endswith("id")), shop_names[0] if shop_names else "id")
+            goldrush_col = next((c for c in shop_names if "goldrush" in c.lower() or "goldfish" in c.lower()), shop_id_col)
+            shop_name_col = next((c for c in shop_names if c.lower() in ("name", "shop_name", "store_name", "title")), None) or "name"
+            shop_lat_col = next((c for c in shop_names if c.lower() in ("latitude", "lat")), None) or "latitude"
+            shop_lng_col = next((c for c in shop_names if c.lower() in ("longitude", "lng", "lon")), None) or "longitude"
+
         if start_date is None:
             start_date = get_earliest_visit_date(connection, checkins_table, checkins_time_col)
 
@@ -328,17 +358,27 @@ def export_visit_details(start_date: Optional[date], end_date: Optional[date], o
             params.append(end_date.isoformat())
         where_sql = " AND ".join(where_clauses)
 
+        # Build select
+        select_parts = [f"{users_name_expr} AS user_name", f"DATE(c.`{checkins_time_col}`) AS visit_date", f"vr.`{responses_col}` AS responses"]
+        if shops_table and shop_fk:
+            select_parts.append(f"s.`{goldrush_col}` AS shop_goldrush_id")
+            select_parts.append(f"s.`{shop_name_col}` AS shop_name")
+            select_parts.append(f"s.`{shop_lat_col}` AS latitude")
+            select_parts.append(f"s.`{shop_lng_col}` AS longitude")
+        else:
+            select_parts.extend(["NULL AS shop_goldrush_id", "NULL AS shop_name", "NULL AS latitude", "NULL AS longitude"])
+
         query = f"""
             SELECT
-                {users_name_expr} AS user_name,
-                DATE(c.`{checkins_time_col}`) AS visit_date,
-                vr.`{responses_col}` AS responses
+                {', '.join(select_parts)}
             FROM `{users_table}` u
             JOIN `{checkins_table}` c ON c.`{checkins_user_id_col}` = u.`{users_pk}`
             LEFT JOIN `{visit_response_table}` vr ON vr.`{vr_checkin_id_col}` = c.`{checkins_pk}`
-            WHERE {where_sql}
-            ORDER BY visit_date ASC
         """
+        if shops_table and shop_fk:
+            query += f" LEFT JOIN `{shops_table}` s ON c.`{shop_fk}` = s.`{shop_id_col}`\n"
+
+        query += f" WHERE {where_sql}\n            ORDER BY visit_date ASC\n        "
 
         user_to_lead = build_user_to_lead_map(TEAM_LEAD_TO_USERS)
         per_lead_rows: Dict[str, List[Dict[str, str]]] = {lead: [] for lead in LEAD_ORDER}
@@ -371,17 +411,24 @@ def export_visit_details(start_date: Optional[date], end_date: Optional[date], o
                 else:
                     responses_text = str(responses_raw) if responses_raw is not None else ""
 
-                goldrush_id = ""
+                goldrush_id = row.get("shop_goldrush_id") or ""
                 cust_name = ""
 
                 if responses_text:
                     try:
                         payload = json.loads(responses_text)
                         flat = flatten_responses(payload)
-                        goldrush_id, cust_name = extract_fields_from_flat(flat)
+                        extracted_gold, cust_name = extract_fields_from_flat(flat)
+                        # prefer extracted goldrush id if present
+                        if extracted_gold:
+                            goldrush_id = extracted_gold
                     except Exception:
                         # Not JSON or unexpected shape; leave blank
                         pass
+
+                shop_name = row.get("shop_name") or ""
+                latitude = row.get("latitude") or ""
+                longitude = row.get("longitude") or ""
 
                 per_lead_rows[team_lead].append(
                     {
@@ -389,6 +436,9 @@ def export_visit_details(start_date: Optional[date], end_date: Optional[date], o
                         "Date": format_day_mon(d),
                         "Goldrush ID": goldrush_id,
                         "Cust Name": cust_name,
+                        "Shop name": shop_name,
+                        "Latitude": str(latitude) if latitude is not None else "",
+                        "Longitude": str(longitude) if longitude is not None else "",
                     }
                 )
         finally:
