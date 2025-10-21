@@ -410,7 +410,7 @@ def generate_xlsx_bytes(start_date=None, end_date=None):
 
 def generate_csv_bytes(start_date=None, end_date=None):
     """Generate the daily visits CSV file as bytes for API download."""
-    # Parse dates
+ 
     if start_date:
         try:
             start_date_obj = date.fromisoformat(start_date)
@@ -425,7 +425,7 @@ def generate_csv_bytes(start_date=None, end_date=None):
             end_date_obj = None
     else:
         end_date_obj = None
-    # Fetch and pivot data
+    
     rows = list(fetch_daily_visits(start_date_obj, end_date_obj))
     user_names = sorted({r["user_name"] for r in rows})
     date_to_user_counts = {}

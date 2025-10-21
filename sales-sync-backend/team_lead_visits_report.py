@@ -7,7 +7,7 @@ from typing import Dict, List
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
 
-# Mapping from Team Lead -> List of direct reports (user display names)
+
 TEAM_LEAD_TO_USERS: Dict[str, List[str]] = {
     "Moses Thulare Moshwane": [
         "Thabo Caiphas Mosa",
@@ -42,7 +42,7 @@ TEAM_LEAD_TO_USERS: Dict[str, List[str]] = {
     ],
 }
 
-# Desired output column order
+
 LEAD_ORDER: List[str] = [
     "Moses Thulare Moshwane",
     "Nkosingiphile Ntombikayise Ntombi Khumalo",
@@ -53,43 +53,43 @@ LEAD_ORDER: List[str] = [
 
 def find_latest_daily_visits_file(reports_dir: str = "reports") -> str:
     """Find the most recent daily visits CSV file."""
-    # Look for files matching the pattern: daily_visits_YYYY-MM-DD.csv
+   
     pattern = os.path.join(reports_dir, "daily_visits_*.csv")
     files = glob.glob(pattern)
     
     if not files:
-        # Fallback to the old naming convention
+       
         old_file = os.path.join(reports_dir, "daily_visits.csv")
         if os.path.exists(old_file):
             return old_file
         return None
     
-    # Sort by modification time (most recent first)
+   
     files.sort(key=os.path.getmtime, reverse=True)
     return files[0]
 
 
 def generate_daily_visits_if_needed(reports_dir: str = "reports") -> str:
     """Generate daily visits report if it doesn't exist."""
-    # Check if we have a recent file (within last 7 days)
+    
     latest_file = find_latest_daily_visits_file(reports_dir)
     if latest_file and os.path.exists(latest_file):
-        # Check if file is recent (within last 7 days)
+       
         file_time = os.path.getmtime(latest_file)
-        current_time = os.path.getmtime(__file__)  # Use script modification time as reference
-        if current_time - file_time < 7 * 24 * 3600:  # 7 days in seconds
+        current_time = os.path.getmtime(__file__)  
+        if current_time - file_time < 7 * 24 * 3600: 
             return latest_file
     
-    # Generate new daily visits report
+    
     print("Generating daily visits report...")
     try:
         from daily_visits_report import main as generate_daily_visits
-        # Generate for yesterday (most recent complete day)
+        
         yesterday = date.today() - timedelta(days=1)
         date_str = yesterday.strftime('%Y-%m-%d')
         output_file = os.path.join(reports_dir, f"daily_visits_{date_str}.csv")
         
-        # Temporarily modify sys.argv to pass arguments to the daily visits script
+        
         original_argv = sys.argv
         sys.argv = ['daily_visits_report.py', date_str, date_str, output_file]
         
@@ -207,7 +207,7 @@ def generate_xlsx_bytes(start_date=None, end_date=None):
         import csv
         from io import StringIO
         from daily_visits_report import generate_csv_bytes as generate_daily_visits_csv
-        # Generate daily visits CSV in memory for the requested date range
+        
         csv_bytes = generate_daily_visits_csv(start_date, end_date)
         csv_str = csv_bytes.decode("utf-8")
         reader = csv.DictReader(StringIO(csv_str))
@@ -247,7 +247,7 @@ def generate_xlsx_bytes(start_date=None, end_date=None):
         import traceback
         print('Error in generate_xlsx_bytes:', e)
         traceback.print_exc()
-        # Return a minimal Excel file with error message
+        
         wb = Workbook()
         ws = wb.active
         ws.title = "Error"
@@ -300,7 +300,7 @@ def generate_csv_bytes(start_date=None, end_date=None):
     except Exception as e:
         print('Error in generate_csv_bytes:', e)
         traceback.print_exc()
-        # Return a minimal CSV with error message
+        
         return f"Error,Failed to generate report: {e}\n".encode("utf-8")
 
 
@@ -311,7 +311,7 @@ def main() -> None:
     parser.add_argument("--end_date", type=str, default=None, help="End date (YYYY-MM-DD)")
     args = parser.parse_args()
 
-    # Use in-memory daily visits data for the requested date range
+    
     from daily_visits_report import generate_csv_bytes as generate_daily_visits_csv
     import csv
     from io import StringIO
@@ -331,7 +331,7 @@ def main() -> None:
         per_user_rows.append(parsed)
     aggregated_rows = compute_team_lead_sums(per_user_rows, TEAM_LEAD_TO_USERS)
     headers = ["Date"] + LEAD_ORDER + ["Total"]
-    # Print header
+   
     print("\t".join(headers))
     for r in aggregated_rows:
         lead_values = [int(r.get(lead, 0) or 0) for lead in LEAD_ORDER]

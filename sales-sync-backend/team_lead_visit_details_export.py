@@ -10,11 +10,11 @@ import mysql.connector
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
 
-# Ensure we can import sibling modules
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from db_config import DATABASE_CONFIG  # type: ignore
 
-# Reuse helpful inference utilities and team lead mapping
+
 from daily_visits_report import (  # type: ignore
     resolve_table_name,
     get_primary_key_column,
@@ -164,7 +164,7 @@ def flatten_responses(obj: Any) -> Dict[str, str]:
                 if q:
                     flat[_norm_key(q)] = a
                 return
-            # Otherwise, descend entries
+    
             for k, v in node.items():
                 if isinstance(v, (dict, list)):
                     _visit(v)
@@ -175,7 +175,7 @@ def flatten_responses(obj: Any) -> Dict[str, str]:
             for item in node:
                 _visit(item)
             return
-        # Primitives are ignored at top-level
+        
 
     _visit(obj)
     return flat
@@ -206,7 +206,7 @@ def extract_fields_from_flat(flat: Dict[str, str]) -> Tuple[str, str]:
         if goldrush_id:
             break
 
-    # Name fields
+    
     first_keys = [
         "customername",
         "customer name",
@@ -319,7 +319,7 @@ def export_visit_details(start_date: Optional[date], end_date: Optional[date], o
             vr_checkin_id_col = infer_visit_response_checkin_id_col(connection, visit_response_table, checkins_table) or "checkin_id"
         responses_col = choose_responses_column(connection, visit_response_table)
 
-        # Try to find shops table and shop FK on checkins
+        
         shops_table = resolve_table_name(connection, [os.getenv("SALESYNC_TABLE_SHOPS"), "shops", "shop", "stores"]) or None
         checkins_cols = [c for c, _ in get_columns_for_table(connection, checkins_table)]
         shop_fk = None
@@ -391,7 +391,7 @@ def export_visit_details(start_date: Optional[date], end_date: Optional[date], o
                 normalized_user = normalize_name_for_match(user_display_name)
                 team_lead = user_to_lead.get(normalized_user)
                 if not team_lead:
-                    # Not one of the requested team leads; skip
+                   
                     continue
 
                 raw_date = row.get("visit_date")
@@ -419,11 +419,11 @@ def export_visit_details(start_date: Optional[date], end_date: Optional[date], o
                         payload = json.loads(responses_text)
                         flat = flatten_responses(payload)
                         extracted_gold, cust_name = extract_fields_from_flat(flat)
-                        # prefer extracted goldrush id if present
+                       
                         if extracted_gold:
                             goldrush_id = extracted_gold
                     except Exception:
-                        # Not JSON or unexpected shape; leave blank
+                        
                         pass
 
                 shop_name = row.get("shop_name") or ""
@@ -444,11 +444,11 @@ def export_visit_details(start_date: Optional[date], end_date: Optional[date], o
         finally:
             cursor.close()
 
-        # Write outputs per team lead
+        
         written_paths: List[str] = []
         for lead in LEAD_ORDER:
             rows = per_lead_rows.get(lead, [])
-            # Keep rows in chronological order (already ordered by date)
+           
             lead_slug = normalize_name_for_match(lead).replace(" ", "-")
             output_csv = os.path.join(output_dir, f"visit_details_{lead_slug}.csv")
             write_csv(rows, output_csv)
@@ -463,7 +463,7 @@ def export_visit_details(start_date: Optional[date], end_date: Optional[date], o
 
 def generate_xlsx_bytes(start_date=None, end_date=None):
     """Generate the team lead visit details Excel file as bytes for API download."""
-    # Parse dates
+   
     if start_date:
         try:
             start_date_obj = datetime.strptime(start_date, "%Y-%m-%d").date()
@@ -478,12 +478,12 @@ def generate_xlsx_bytes(start_date=None, end_date=None):
             end_date_obj = None
     else:
         end_date_obj = None
-    # Use a temp output path
+    
     import tempfile
 
     with tempfile.TemporaryDirectory() as tmpdir:
         paths = export_visit_details(start_date_obj, end_date_obj, tmpdir)
-        # Find the xlsx file
+       
         xlsx_path = next((p for p in paths if p.endswith(".xlsx")), None)
         if not xlsx_path:
             raise RuntimeError("No XLSX file generated")
@@ -512,12 +512,12 @@ def generate_csv_bytes(start_date=None, end_date=None):
             end_date_obj = None
     else:
         end_date_obj = None
-    # Use a temp output path to get the rows for all leads
+   
     with tempfile.TemporaryDirectory() as tmpdir:
         paths = export_visit_details(start_date_obj, end_date_obj, tmpdir)
-        # Find the CSV file (for all leads, concatenate)
+       
         csv_paths = [p for p in paths if p.endswith(".csv")]
-        # Read and concatenate all CSVs (skip header after first)
+       
         output = StringIO()
         first = True
         for path in csv_paths:
@@ -527,12 +527,12 @@ def generate_csv_bytes(start_date=None, end_date=None):
                     output.writelines(lines)
                     first = False
                 else:
-                    output.writelines(lines[1:])  # skip header
+                    output.writelines(lines[1:])  
         return output.getvalue().encode("utf-8")
 
 
 def main():
-    # Usage: python Scripts/team_lead_visit_details_export.py [start_date] [end_date] [output_dir]
+   
     start_date = parse_date_opt(sys.argv[1]) if len(sys.argv) > 1 and sys.argv[1] else None
     end_date = parse_date_opt(sys.argv[2]) if len(sys.argv) > 2 and sys.argv[2] else None
     output_dir = sys.argv[3] if len(sys.argv) > 3 else os.path.join("reports", "visit_details")
