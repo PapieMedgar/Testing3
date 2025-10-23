@@ -146,6 +146,9 @@ def infer_users_name_expr(connection, users_table: str) -> str:
         return f"u.`{override_col}`"
 
     columns = dict(get_columns_for_table(connection, users_table))
+    # Prefer phone numbers for display/mapping to support phone-based team lead reports
+    if "phone" in columns:
+        return "u.`phone`"
     candidates = ["name", "full_name", "display_name", "username", "user_name"]
     for col in candidates:
         if col in columns:

@@ -3,17 +3,14 @@ import { Button } from "@/components/ui/button";
 import { reportsAPI } from "@/lib/api";
 
 const TEAM_LEADS = [
-  "Moses Thulare Moshwane",
-  "Nkosingiphile Ntombikayise Ntombi Khumalo",
-  "Ntombizodwa Zodwa Dubazana",
-  "Gilda Katarina Mashele",
+  "068 641 1128",
+  "069 043 3247",
+  "069 068 2819",
+  "069 066 2955",
 ];
 function leadSlug(name: string) {
-  return name
-    .toLowerCase()
-    .replace(/\([^)]*\)/g, "")
-    .replace(/\s+/g, "-")
-    .trim();
+  // For phone numbers, simply replace spaces with dashes; keep digits intact
+  return name.trim().replace(/\s+/g, "-");
 }
 
 const Reports: React.FC = () => {
