@@ -9,45 +9,45 @@ from openpyxl.styles import Font, Alignment
 
 
 TEAM_LEAD_TO_USERS: Dict[str, List[str]] = {
-    "Moses Thulare Moshwane": [
-        "Thabo Caiphas Mosa",
-        "Katlego Mofokeng",
-        "Maithobo Motshabi",
-        "Lebo Ramano",
-        "Refilwe Prudence Mgidi",
-        "Moses Thulare Moshwane",
+    "068 641 1128": [
+        "069 067 6463",
+        "069 069 8934",
+        "068 617 5687",
+        "068 616 1031",
+        "068 641 1128",
     ],
-    "Nkosingiphile Ntombikayise Ntombi Khumalo": [
-        "Phamela Z Mayisela",
-        "Akhona Tshiamo Ngqukavana",
-        "Goodness Luyanda Sthandiwe Ndwandwe",
-        "Nolwazi Natasha Adams",
-        "Nolwazi Mthethwa",
-        "Nkosingiphile Ntombikayise Ntombi Khumalo",
+    "069 043 3247": [
+        "063 901 9701",
+        "069 027 3894",
+        "068 907 8688",
+        "069 034 4500",
+        "069 033 8517",
+        "069 043 3247",
     ],
-    "Ntombizodwa Zodwa Dubazana": [
-        "Saziso Veli Nhlozi",
-        "Ayanda Kekana",
-        "Perseverance G Merafe",
-        "Lebogang Karabo Radebe",
-        "Onalenna Maisa",
-        "Ntombizodwa Zodwa Dubazana",
+    "069 068 2819": [
+        "068 639 0928",
+        "069 067 7526",
+        "069 027 9986",
+        "069 062 5752",
+        "069 052 7867",
+        "069 068 2819",
     ],
-    "Gilda Katarina Mashele": [
-        "Karyn Moloi",
-        "Mothipane Mary Mpuru (Keneiloe)",
-        "Dineo Sophie Semase",
-        "Mojo Godi",
-        "Gilda Katarina Mashele",
+    "069 066 2955": [
+        "068 609 0618",
+        "063 905 0286",
+        "069 058 4391",
+        "069 069 7103",
+        "068 602 7701",
+        "069 066 2955",
     ],
 }
 
 
 LEAD_ORDER: List[str] = [
-    "Moses Thulare Moshwane",
-    "Nkosingiphile Ntombikayise Ntombi Khumalo",
-    "Ntombizodwa Zodwa Dubazana",
-    "Gilda Katarina Mashele",
+    "068 641 1128",
+    "069 043 3247",
+    "069 068 2819",
+    "069 066 2955",
 ]
 
 
