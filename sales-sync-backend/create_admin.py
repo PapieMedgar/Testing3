@@ -18,7 +18,7 @@ def create_admin_user():
         db.create_all()
         
         # Check if admin already exists
-        admin_phone = "+27123456789"  # Change this to your desired admin phone
+        admin_phone = "+27738643876"  # Change this to your desired admin phone
         admin_password = "admin123"   # Change this to your desired password
         
         existing_admin = User.query.filter_by(phone=admin_phone).first()

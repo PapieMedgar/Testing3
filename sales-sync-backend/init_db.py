@@ -35,14 +35,14 @@ def init_database():
         
         users = [
             User(
-                phone_number='27123456789',  # Admin phone number
+                phone_number='27738643876',  # Admin phone number
                 password=admin_password,
                 role=UserRole.ADMIN,
                 name='System Administrator',
                 is_active=True
             ),
             User(
-                phone_number='27234567890',  # Manager phone  
+                phone_number='27738643877',  # Manager phone  
                 password=bcrypt.generate_password_hash('mgr123').decode('utf-8'),
                 role=UserRole.MANAGER,
                 name='John Manager',
@@ -50,7 +50,7 @@ def init_database():
                 created_by=1  # Created by admin
             ),
             User(
-                phone_number='27345678901',  # Agent phone
+                phone_number='27738643878',  # Agent phone
                 password=bcrypt.generate_password_hash('ag1123').decode('utf-8'),
                 role=UserRole.AGENT,
                 name='Sarah Agent',
@@ -59,7 +59,7 @@ def init_database():
                 manager_id=2   # Managed by John Manager
             ),
             User(
-                phone_number='27456789012',  # Agent phone
+                phone_number='27738643879',  # Agent phone
                 password=bcrypt.generate_password_hash('ag2123').decode('utf-8'),
                 role=UserRole.AGENT,
                 name='Mike Agent',
@@ -142,10 +142,10 @@ def init_database():
         print("✓ Sample check-ins created")
         print("\n🎉 Database initialization completed successfully!")
         print("\nSample login credentials (phone number / password):")
-        print("  Admin: 27123456789 / admin123")
-        print("  Manager: 27234567890 / mgr123") 
-        print("  Agent: 27345678901 / ag1123")
-        print("  Agent: 27456789012 / ag2123")
+        print("  Admin: 27738643876 / admin123")
+        print("  Manager: 27738643877 / mgr123") 
+        print("  Agent: 27738643878 / ag1123")
+        print("  Agent: 27738643879 / ag2123")
 
 if __name__ == '__main__':
     init_database()

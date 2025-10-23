@@ -68,7 +68,7 @@ const Settings = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone Number</Label>
-                <Input id="phone" defaultValue="+27 12 345 6789" />
+                <Input id="phone" defaultValue="+27 73 864 3876" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="role">Role</Label>

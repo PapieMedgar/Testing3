@@ -189,14 +189,14 @@ export const authAPI = {
       
       // Dummy user accounts
       const dummyUsers = [
-        { id: 1, phone: "+27111000000", password: "admin123", role: "ADMIN", name: "Admin User", is_active: true, created_at: new Date().toISOString() },
-        { id: 5, phone: "+27111222333", password: "manager123", role: "MANAGER", name: "Sarah Johnson", is_active: true, created_at: new Date().toISOString() },
-        { id: 6, phone: "+27444555666", password: "manager123", role: "MANAGER", name: "Michael Chen", is_active: true, created_at: new Date().toISOString() },
-        { id: 2, phone: "+27123456789", password: "agent123", role: "AGENT", name: "John Doe", is_active: true, created_at: new Date().toISOString(), manager_id: 5 },
-        { id: 3, phone: "+27987654321", password: "agent123", role: "AGENT", name: "Jane Smith", is_active: true, created_at: new Date().toISOString(), manager_id: 5 },
-        { id: 4, phone: "+27555666777", password: "agent123", role: "AGENT", name: "Robert Wilson", is_active: true, created_at: new Date().toISOString(), manager_id: 6 },
-        { id: 7, phone: "+27777888999", password: "agent123", role: "AGENT", name: "Lisa Brown", is_active: false, created_at: new Date().toISOString(), manager_id: 6 },
-        { id: 8, phone: "+27111999000", password: "demo123", role: "AGENT", name: "Demo Agent", is_active: true, created_at: new Date().toISOString(), manager_id: 5 }
+        { id: 1, phone: "+27738643876", password: "admin123", role: "ADMIN", name: "Admin User", is_active: true, created_at: new Date().toISOString() },
+        { id: 5, phone: "+27738643877", password: "manager123", role: "MANAGER", name: "Sarah Johnson", is_active: true, created_at: new Date().toISOString() },
+        { id: 6, phone: "+27738643878", password: "manager123", role: "MANAGER", name: "Michael Chen", is_active: true, created_at: new Date().toISOString() },
+        { id: 2, phone: "+27738643879", password: "agent123", role: "AGENT", name: "John Doe", is_active: true, created_at: new Date().toISOString(), manager_id: 5 },
+        { id: 3, phone: "+27738643880", password: "agent123", role: "AGENT", name: "Jane Smith", is_active: true, created_at: new Date().toISOString(), manager_id: 5 },
+        { id: 4, phone: "+27738643881", password: "agent123", role: "AGENT", name: "Robert Wilson", is_active: true, created_at: new Date().toISOString(), manager_id: 6 },
+        { id: 7, phone: "+27738643882", password: "agent123", role: "AGENT", name: "Lisa Brown", is_active: false, created_at: new Date().toISOString(), manager_id: 6 },
+        { id: 8, phone: "+27738643883", password: "demo123", role: "AGENT", name: "Demo Agent", is_active: true, created_at: new Date().toISOString(), manager_id: 5 }
       ];
       
       const user = dummyUsers.find(u => u.phone === phone && u.password === password);

@@ -24,13 +24,13 @@ with app.app_context():
     admin_user = User.query.filter_by(role=UserRole.ADMIN).first()
     if not admin_user:
         admin_user = User(
-            phone='+27123456789',
+            phone='+27738643876',
             password_hash=bcrypt.generate_password_hash('admin123').decode('utf-8'),
             role=UserRole.ADMIN
         )
         db.session.add(admin_user)
         db.session.commit()
-        print('Admin user created successfully! Phone: +27123456789, Password: admin123')
+        print('Admin user created successfully! Phone: +27738643876, Password: admin123')
     else:
         print('Admin user already exists')
 "

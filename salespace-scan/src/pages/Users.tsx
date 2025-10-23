@@ -660,7 +660,7 @@ const Users = () => {
                 <Label htmlFor="phone">Phone Number *</Label>
                 <Input
                   id="phone"
-                  placeholder="+27123456789"
+                  placeholder="+27738643876"
                   value={newUserPhone}
                   onChange={(e) => setNewUserPhone(e.target.value)}
                 />
@@ -755,7 +755,7 @@ const Users = () => {
                 <Label htmlFor="edit-phone">Phone Number *</Label>
                 <Input
                   id="edit-phone"
-                  placeholder="+27123456789"
+                  placeholder="+27738643876"
                   value={editUserPhone}
                   onChange={(e) => setEditUserPhone(e.target.value)}
                 />
