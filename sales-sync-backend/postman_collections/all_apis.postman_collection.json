@@ -18,7 +18,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"phone\": \"+27123456789\",\n  \"password\": \"agent123\"\n}"
+              "raw": "{\n  \"phone\": \"+27738643876\",\n  \"password\": \"agent123\"\n}"
             },
             "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api","auth","login"] }
           }
